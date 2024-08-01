@@ -1,0 +1,84 @@
+Android install vosk deepSpeech google-cloud-texttospeech libretranslate
+from vosk import Model, KaldiRecognizer
+import wave
+
+model = Model("path/to/vosk-model")
+wf = wave.open("path/to/audio/file.wav", "rb")
+rec = KaldiRecognizer(model, wf.getframerate())
+
+while True:
+    data = wf.readframes(4000)
+    if len(data) == 0:
+        break
+    if rec.AcceptWaveform(data):
+        print(rec.Result())
+import requests
+
+def translate_text(text, source_lang, target_lang):
+    url = "https://libretranslate.com/translate"
+    payload = {
+        "q": text,
+        "source": source_lang,
+        "target": target_lang,
+        "format": "text"
+    }
+    response = requests.post(url, data=payload)
+    return response.json()["translatedText"]
+
+translated_text = translate_text("Hello, world!", "en", "es")
+print(translated_text)  # "Hola, mundo!"
+from google.cloud import texttospeech
+
+client = texttospeech.TextToSpeechClient()
+
+def text_to_speech(text, language_code):
+    synthesis_input = texttospeech.SynthesisInput(text=text)
+    voice = texttospeech.VoiceSelectionParams(
+        language_code=language_code,
+        ssml_gender=texttospeech.SsmlVoiceGender.NEUTRAL)
+    audio_config = texttospeech.AudioConfig(
+        audio_encoding=texttospeech.AudioEncoding.MP3)
+
+    response = client.synthesize_speech(
+        input=synthesis_input, voice=voice, audio_config=audio_config)
+
+    with open("output.mp3", "wb") as out:
+        out.write(response.audio_content)
+
+text_to_speech("Hola, mundo!", "es-ES")
+from vosk import Model, KaldiRecognizer
+import wave
+import requests
+from google.cloud import texttospeech
+
+def speech_to_text(audio_file):
+    model = Model("path/to/vosk-model")
+    wf = wave.open(audio_file, "rb")
+    rec = KaldiRecognizer(model, wf.getframerate())
+    
+    text = ""
+    while True:
+        data = wf.readframes(4000)
+        if len(data) == 0:
+            break
+        if rec.AcceptWaveform(data):
+            text += rec.Result()
+    return text
+
+def translate_text(text, source_lang, target_lang):
+    url = "https://libretranslate.com/translate"
+    payload = {
+        "q": text,
+        "source": source_lang,
+        "target": target_lang,
+        "format": "text"
+    }
+    response = requests.post(url, data=payload)
+    return response.json()["translatedText"]
+
+def text_to_speech(text, language_code):
+    client = texttospeech.TextToSpeechClient()
+    synthesis_input = texttospeech.SynthesisInput(text=text)
+    voice = texttospeech.VoiceSelectionParams(
+        language_code=language_code,
+        ssml_gender
